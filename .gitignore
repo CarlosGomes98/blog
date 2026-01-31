@@ -22,3 +22,9 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Obsidian sync (keep vault path private, regenerate content)
+sync-config.json
+src/content/blog/*.md
+src/content/blog/*.mdx
+public/images/blog/*

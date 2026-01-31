@@ -30,7 +30,7 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				box-shadow: var(--box-shadow);
 			}
 			.prose {
-				width: 720px;
+				width: 900px;
 				max-width: calc(100% - 2em);
 				margin: auto;
 				padding: 1em;
@@ -53,6 +53,26 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				font-style: italic;
 			}
 		</style>
+		<script>
+			// Make images clickable - open full size in new tab
+			document.addEventListener('DOMContentLoaded', () => {
+				const images = document.querySelectorAll('.prose img');
+
+				images.forEach(img => {
+					img.style.cursor = 'zoom-in';
+
+					// Wrap image in a link
+					const link = document.createElement('a');
+					link.href = img.src;
+					link.target = '_blank';
+					link.rel = 'noopener noreferrer';
+					link.title = 'Click to view full size';
+
+					img.parentNode.insertBefore(link, img);
+					link.appendChild(img);
+				});
+			});
+		</script>
 	</head>
 
 	<body>
@@ -64,6 +84,7 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				</div>
 				<div class="prose">
 					<div class="title">
+						{pubDate && (
 						<div class="date">
 							<FormattedDate date={pubDate} />
 							{
@@ -74,6 +95,7 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 								)
 							}
 						</div>
+					)}
 						<h1>{title}</h1>
 						<hr />
 					</div>

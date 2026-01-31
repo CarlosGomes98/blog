@@ -3,6 +3,8 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
+    "sync": "node scripts/sync-obsidian.js",
+    "sync:dev": "npm run sync && npm run dev",
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
@@ -13,6 +15,8 @@
     "@astrojs/rss": "^4.0.15",
     "@astrojs/sitemap": "^3.7.0",
     "astro": "^5.16.15",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
     "sharp": "^0.34.3"
   }
 }

@@ -44,7 +44,7 @@ body {
 	line-height: 1.7;
 }
 main {
-	width: 720px;
+	width: 900px;
 	max-width: calc(100% - 2em);
 	margin: auto;
 	padding: 3em 1em;
@@ -104,6 +104,25 @@ img {
 	max-width: 100%;
 	height: auto;
 	border-radius: 8px;
+	cursor: pointer;
+	transition: transform 0.2s;
+}
+
+/* Make images in blog posts larger - break out of text width */
+.prose img,
+article img {
+	max-width: 120%;
+	margin-left: -10%;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* On mobile, keep images within bounds */
+@media (max-width: 900px) {
+	.prose img,
+	article img {
+		max-width: 100%;
+		margin-left: 0;
+	}
 }
 code {
 	padding: 2px 5px;
@@ -119,9 +138,27 @@ pre > code {
 }
 blockquote {
 	border-left: 4px solid var(--accent);
-	padding: 0 0 0 20px;
-	margin: 0;
-	font-size: 1.333em;
+	padding: 1em 1.5em;
+	margin: 1.5em 0;
+	background: rgba(var(--accent), 0.05);
+	border-radius: 4px;
+	font-size: 1em;
+}
+
+blockquote strong:first-child {
+	display: block;
+	color: var(--accent);
+	font-size: 1.1em;
+	margin-bottom: 0.5em;
+}
+
+/* KaTeX math sizing */
+.katex {
+	font-size: 1em !important;
+}
+.katex-display {
+	font-size: 1.1em !important;
+	margin: 1em 0;
 }
 hr {
 	border: none;

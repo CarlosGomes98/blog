@@ -1,0 +1,8 @@
+{
+  "obsidianVaultPath": "/Users/yourname/Documents/ObsidianVault",
+  "publishTag": "blog/published",
+  "draftTag": "blog/draft",
+  "imageSourceFolder": "blog-images",
+  "blogContentDest": "./src/content/blog",
+  "imagesDest": "./public/images/blog"
+}

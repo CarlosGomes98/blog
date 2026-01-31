@@ -8,11 +8,16 @@ const blog = defineCollection({
 	schema: ({ image }) =>
 		z.object({
 			title: z.string(),
-			description: z.string(),
-			// Transform string to Date object
-			pubDate: z.coerce.date(),
+			description: z.string().optional(),
+			// Support both 'date' and 'pubDate' for Obsidian compatibility
+			date: z.coerce.date().optional(),
+			pubDate: z.coerce.date().optional(),
 			updatedDate: z.coerce.date().optional(),
 			heroImage: image().optional(),
+			// Support tags from Obsidian
+			tags: z.array(z.string()).optional(),
+			author: z.string().optional(),
+			draft: z.boolean().optional().default(false),
 		}),
 });
 
