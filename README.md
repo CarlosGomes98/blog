@@ -1,4 +1,4 @@
-# Technical Blog with Obsidian Integration
+# Technical Blog with Obsidian Integration (Vibe coded)
 
 A streamlined blog setup that syncs your Obsidian notes to an Astro-powered static site. Write in Obsidian using markdown, tag posts for publishing, and sync them to your blog with a single command.
 

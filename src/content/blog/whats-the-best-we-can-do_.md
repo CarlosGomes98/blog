@@ -32,7 +32,7 @@ In determining which headache to face next, it is useful to have a high level ma
 >2. how fast we read and write data
 
 ## FLOPs FLOPS and FLOP/s - Alice's story
-A floating point operation (FLOP) is the most basic building block of our algorithms. A very natural way to measure how much work we are doing is too count how many of these we are carrying out. Of course, we have to perform the operations on *something*, so we need to feed the accelerator with data. The rate at which we perform operations is somewhat independent of the rate at which we are able to read/write the incoming/outgoing data. 
+A floating point operation (FLOP) is the most basic building block of our algorithms. A very natural way to measure how much work we are doing is to count how many of these we are carrying out. Of course, we have to perform the operations on *something*, so we need to feed the accelerator with data. The rate at which we perform operations is somewhat independent of the rate at which we are able to read/write the incoming/outgoing data. 
 
 If we can move data infinitely fast, then it is clear that a faster accelerator improves our performance, being able to perform operations at a higher rate. Alice's thinking is that, at the end of the day, we have a certain number of FLOPs that need to be performed, as dictated by our algorithm. As long as this is fixed, the only way to improve performance is to carry them out faster. 
 
