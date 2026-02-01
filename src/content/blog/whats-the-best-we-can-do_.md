@@ -31,6 +31,8 @@ In determining which headache to face next, it is useful to have a high level ma
 >1. Obviously, how fast we perform the operations, but also
 >2. how fast we read and write data
 
+![FLOPS](/images/blog/FLOPS.excalidraw.png)
+
 ## FLOPs FLOPS and FLOP/s - Alice's story
 A floating point operation (FLOP) is the most basic building block of our algorithms. A very natural way to measure how much work we are doing is to count how many of these we are carrying out. Of course, we have to perform the operations on *something*, so we need to feed the accelerator with data. The rate at which we perform operations is somewhat independent of the rate at which we are able to read/write the incoming/outgoing data. 
 
