@@ -25,3 +25,5 @@ pnpm-debug.log*
 
 # Obsidian sync (keep vault path private)
 sync-config.json
+
+.vscode
