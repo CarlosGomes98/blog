@@ -19,6 +19,7 @@ While writing performant CUDA kernels requires a deep understanding of the under
 
 ## Executing a kernel
 
+![kernel_lifecycle](/images/blog/kernel_lifecycle.png)
 We can think of a kernel’s lifecycle as having two main parts:
 
 1. **Host-side launch:**  The CPU prepares the kernel arguments, configures the launch parameters (such as grid and block sizes), and enqueues the kernel into a CUDA stream. A kernel launch is simply a CPU-side operation that schedules work for the GPU—it does not execute the computation itself.
