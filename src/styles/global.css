@@ -108,21 +108,14 @@ img {
 	transition: transform 0.2s;
 }
 
-/* Make images in blog posts larger - break out of text width */
+/* Center images in blog posts */
 .prose img,
 article img {
-	max-width: 120%;
-	margin-left: -10%;
+	display: block;
+	max-width: 100%;
+	margin-left: auto;
+	margin-right: auto;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* On mobile, keep images within bounds */
-@media (max-width: 900px) {
-	.prose img,
-	article img {
-		max-width: 100%;
-		margin-left: 0;
-	}
 }
 code {
 	padding: 2px 5px;

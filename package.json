@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "sync": "node scripts/sync-obsidian.js",
+    "sync": "rm -f .astro/data-store.json && node scripts/sync-obsidian.js",
     "sync:dev": "npm run sync && npm run dev",
     "dev": "astro dev",
     "build": "astro build",

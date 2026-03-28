@@ -17,7 +17,7 @@ Current posts in this series:
 
 - The starting point (You're here!)
 - [Whats the best we can do?](/blog/whats-the-best-we-can-do_/)
-- ...
+- [Defanging kernels](/blog/defanging-kernels/)
 
 # ML applications - Hybrid computing
 
