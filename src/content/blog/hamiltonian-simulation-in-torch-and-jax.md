@@ -74,8 +74,9 @@ In JAX, the meat of evaluating the hamiltonian looks like this.
 ```python
 def hamiltonian_field(H):
     def field(state):
-        g = jax.grad(H)(state)            # g.q = ∂H/∂q, g.p = ∂H/∂p
-        return PhaseVector(q=g.p, p=-g.q) # swap and negate: that's all of Hamilton
+        g = jax.grad(H)(state)  # g.q = ∂H/∂q, g.p = ∂H/∂p
+        # swap and negate: that's all of Hamilton
+        return PhaseVector(q=g.p, p=-g.q)
     return field
 ```
 
@@ -83,13 +84,13 @@ That swap-and-negate is the key difference from gradient descent. Gradient desce
 
 ![Hamiltonian design v2](/images/blog/Hamiltonian%20design%20v2.excalidraw.png)
 
-And that's basically a working prototype! Below is the architecture diagram I ended up with.
+And that's basically a working prototype! Below is the architecture diagram I ended up with. Note that the visualizer is fully vibe-coded, as I didn't want to deal with matplotlib. Agents helped me with writing out some of the Hamiltonians as well.
 
 ![Hamiltonian architecture](/images/blog/Hamiltonian%20architecture.excalidraw.png)
 
 ## Examples
 
-Both examples below are the same three lines of setup: write `H`, wrap it with `hamiltonian_field`, hand it to a `Simulator`. The left panel of each clip is phase space (`q` against `p`, with the field's arrow and the energy drift), the right is what the system actually looks like. The runnable versions are in `examples/` in the repo.
+Every example below follows the same recipe: write `H`, wrap it with `hamiltonian_field`, hand it to a `Simulator`. The left panel of each clip is phase space (`q` against `p`, with the field's arrow and the energy drift), the right is what the system actually looks like. The runnable versions are in `examples/` in the repo.
 
 ### Harmonic oscillator
 
@@ -100,11 +101,47 @@ def harmonic(state):
     omega = 2.0 * jnp.pi
     return (0.5 * omega * (state.q**2 + state.p**2)).sum()
 
-sim = Simulator([hamiltonian_field(harmonic)], Engine(rk4_method), initial, dt=0.005,
+fields = [hamiltonian_field(harmonic)]
+sim = Simulator(fields, Engine(rk4_method), initial, dt=0.005,
                 observables={"energy": harmonic})
 ```
 
 ![harmonic](/images/blog/harmonic.gif)
+
+### Damped oscillator
+
+The same spring, now with friction. Friction drains energy, so it can't be part of a Hamiltonian. Instead it's a second field, $\dot p = -\gamma p$, added on top of the Hamiltonian one. This is why the design treats fields as things you can combine.
+
+```python
+def damped_field(gamma):
+    def field(state):
+        return PhaseVector(p=-gamma * state.p, q=0)
+    return field
+
+fields = [hamiltonian_field(harmonic), damped_field(gamma=0.5)]
+sim = Simulator(fields, Engine(rk4_method), initial, dt=0.005,
+                observables={"energy": harmonic})
+```
+
+![damped_oscillator](/images/blog/damped_oscillator.gif)
+
+Instead of a circle, the phase plot spirals into the origin.
+
+### Kepler orbit
+
+A planet around a sun. Now `q` and `p` are 2-D vectors (position and momentum in the plane), and the potential is gravity's $-1/r$, in units where $GM = 1$.
+
+```python
+def kepler(state):
+    return 0.5 * jnp.sum(state.p**2) - 1.0 / jnp.linalg.norm(state.q)
+
+def kepler_embed(q):  # the sun as a fixed anchor, plus the planet
+    return jnp.stack([jnp.zeros(2), q])
+```
+
+![kepler](/images/blog/kepler.gif)
+
+The line from the sun sweeps faster near the sun and slower far away, which is Kepler's second law falling out of the Hamiltonian.
 
 ### Double pendulum
 
@@ -115,11 +152,13 @@ def double_pendulum(state):
     t1, t2 = state.q[0], state.q[1]
     p1, p2 = state.p[0], state.p[1]
     d = t1 - t2
-    T = (p1**2 + 2 * p2**2 - 2 * p1 * p2 * jnp.cos(d)) / (2 * (1 + jnp.sin(d)**2))
+    num = p1**2 + 2 * p2**2 - 2 * p1 * p2 * jnp.cos(d)
+    T = num / (2 * (1 + jnp.sin(d)**2))
     V = -2 * jnp.cos(t1) - jnp.cos(t2)
     return T + V
 
-sim = Simulator([hamiltonian_field(double_pendulum)], Engine(rk4_method), initial, dt=0.005,
+fields = [hamiltonian_field(double_pendulum)]
+sim = Simulator(fields, Engine(rk4_method), initial, dt=0.005,
                 observables={"energy": double_pendulum})
 ```
 
@@ -136,6 +175,28 @@ def double_pendulum_embed(q):
 
 This is the clip at the top of the post. The phase plot is a 2-D projection (`θ₁`, `p₁`) of the 4-D state, which is why the curve crosses itself. In the full 4-D space a trajectory can never cross itself (each state has exactly one future), but its shadow on a 2-D plane can.
 
+### Triple pendulum (with agentic help)
+
+Writing out the double pendulum's kinetic term by hand was the hardest part of that example, and a triple pendulum's is much worse. It turns out you don't have to write it at all. The embedding already says where every bob is, so its Jacobian $J$ gives the bob velocities, $J\dot q$. That's enough to build the kinetic energy: $T = \frac{1}{2}\dot q^\top M \dot q$ with $M = J^\top J$, or $T = \frac{1}{2} p^\top M^{-1} p$ in terms of momentum.
+
+```python
+def pendulum_hamiltonian(embed):
+    def H(state):
+        bobs = lambda q: embed(q)[1:].reshape(-1)  # pivot is fixed
+        J = jax.jacfwd(bobs)(state.q)  # bob velocities = J @ q_dot
+        M = J.T @ J
+        T = 0.5 * state.p @ jnp.linalg.solve(M, state.p)
+        V = embed(state.q)[1:, 1].sum()  # bob heights
+        return T + V
+    return H
+
+triple_pendulum = pendulum_hamiltonian(triple_pendulum_embed)
+```
+
+Autodiff builds the Hamiltonian (`jax.jacfwd`), and then `hamiltonian_field` differentiates it again with `jax.grad`, straight through the Jacobian and the linear solve. A triple pendulum is now just its embedding: the same function as `double_pendulum_embed` with one more rod. 
+
+![triple_pendulum](/images/blog/triple_pendulum.gif)
+
 ## Issues
 
 While this first approach technically works, there were a few issues with the implementation.
@@ -148,7 +209,7 @@ Below is a profile of a single frame, which includes a simulation step followed 
 
 ![profile_frame](/images/blog/profile_frame.png)
 
-Let's say our goal is real-time simulation. `dt` trades accuracy for compute; with the Euler integrator I started with, I needed dt = 1e-4 to keep the energy drift small. That means 10,000 steps per simulated second. The above only gets us about 30 steps per second. Clearly this will never be viable, so let's introduce a requirement of 30fps, where we do additional simulation steps between each frame update. Now that means we need to do ~330 simulation steps for each visualizer step, with a budget of ~33ms per frame. The visualizer runs in matplotlib, and I don't want to try to optimize it, so that leaves the simulator.
+Let's say our goal is real-time simulation. `dt` trades accuracy for compute; with the Euler integrator I started with, I needed dt = 1e-4 to keep the energy drift small. That means 10,000 steps per simulated second. The above only gets us about 30 steps per second. Clearly this will never be viable, so let's introduce a requirement of 30fps, where we do additional simulation steps between each frame update. Now that means we need to do ~330 simulation steps for each visualizer step, with a budget of ~33ms per frame. The visualizer runs in matplotlib, and I don't want to try to optimize it, so that leaves the simulator, which according to the numbers above needs to be close to free.
 
 Batching ~330 simulator steps per visualizer step gets us the first bar below. Each eager step costs ~100 µs once they're batched, so the simulation takes ~30 ms and doubles the frame time. The bottom bars show where we're headed.
 
