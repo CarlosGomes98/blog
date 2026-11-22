@@ -178,9 +178,9 @@ function convertWikiLinks(content, filename, publishedPostsMap) {
  * Convert Obsidian callouts to standard markdown blockquotes
  */
 function convertCallouts(content) {
-  // Match callout syntax: >[!type] Title
+  // Match callout syntax: >[!type] Title, also "> [!type]" and foldable "[!type]-" / "[!type]+"
   // followed by lines starting with >
-  const calloutRegex = /^>\[!(\w+)\]\s*(.*?)$/gm;
+  const calloutRegex = /^>\s*\[!(\w+)\][+-]?\s*(.*?)$/gm;
 
   return content.replace(calloutRegex, (match, type, title) => {
     // Convert to a blockquote with bold title
@@ -212,6 +212,12 @@ function convertImageEmbeds(content, filename) {
     let actualImageFile = imageFile;
     if (imageFile.endsWith('.excalidraw')) {
       actualImageFile = imageFile + '.png';
+    } else if (!path.extname(imageFile)) {
+      // Excalidraw notes not named *.excalidraw (e.g. [[My drawing]]) export as "My drawing.excalidraw.png"
+      const exported = imageFile + '.excalidraw.png';
+      if (fs.existsSync(path.join(config.obsidianVaultPath, config.imageSourceFolder, exported))) {
+        actualImageFile = exported;
+      }
     }
 
     // Sanitize filename (Obsidian removes special chars when exporting)
